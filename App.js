@@ -19,12 +19,11 @@ import {
   
 import * as Permissions from 'expo-permissions';
 import { Camera } from 'expo-camera';
-// import { variableDeclaration } from '@babel/types';
-import { createAppContainer } from 'react-navigation';
-import { createStackNavigator } from 'react-navigation-stack';
 
 
-export class CameraScreen extends React.Component {
+
+
+export default class CameraScreen extends React.Component {
   state = {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
@@ -32,7 +31,10 @@ export class CameraScreen extends React.Component {
 
   async componentWillMount() {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
-    this.setState({ hasCameraPermission: status === 'granted' });
+    this.setState({ 
+        hasCameraPermission: status === 'granted',
+        photoURI: '',        
+    });
   }
 
   componentDidMount() {
@@ -41,8 +43,38 @@ export class CameraScreen extends React.Component {
     });
   }
   render() {
-    const { hasCameraPermission } = this.state;
-    if (hasCameraPermission === null) {
+    const { hasCameraPermission, photoURI } = this.state;
+    
+    console.log('photoURI', photoURI)
+    if (photoURI !==''){
+        return(
+            <View style={styles.container}>
+                <Image
+                  style={styles.pillimage}
+                  source={{ uri: this.state.photoURI}}
+                />
+                <Text style={styles.title}> Your Image </Text>
+                <View style = {styles.OutputButtonContainer}>
+                   <TouchableOpacity
+                        onPress={() => this.setState({ photoURI: ''})}
+                        style={{ alignSelf: 'center' }}
+                        >
+                        <Octicons name="arrow-left" size={70} color="black" />
+                    </TouchableOpacity>
+                     
+                    <TouchableOpacity
+                        onPress={() => this.setState({ DrugScreen: 'true'})}
+                        style={{ alignSelf: 'center' }}
+                        >
+                        <Octicons name="check" size={70} color="black" />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        
+        )
+    }
+    
+    else if (hasCameraPermission === null) {
       return <View />;
     } else if (hasCameraPermission === false) {
       return <Text>No access to camera</Text>;
@@ -57,12 +89,13 @@ export class CameraScreen extends React.Component {
               style={{
                 flex: 8,
                 backgroundColor: 'transparent',
-                flexDirection: 'row',
+                flexDirection: 'column',
               }}>
+              <View style = {{flex: 0.5}, {justifyContent: "center"}}>
               <TouchableOpacity
                 style={{
                   flex: 0.3,
-                  alignSelf: 'flex-end',
+                  alignSelf: 'flex-start',
                   alignItems: 'center',
                 }}
                 onPress={() => {
@@ -73,17 +106,17 @@ export class CameraScreen extends React.Component {
                         : Camera.Constants.Type.back,
                   });
                 }}>
-                <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}> Flip </Text>
+                <Ionicons name="ios-swap" size={40} color="white" />
+                </TouchableOpacity>
+                </View>
                 <View style={styles.CircleShapecontainer}>
                     <View style={styles.CircleShapeView}></View>
                     <Text style={styles.title}> Capture capsule within guide </Text>
                 </View>
-                </TouchableOpacity>
             </View>
             <View style={{ flex: 2}}>
                 <TouchableOpacity
-                    onPress={this.snap.bind(this)}
-                
+                    onPress={this.snap}
                     style={{ alignSelf: 'center' }}
                 >
                 <Ionicons name="ios-radio-button-on" size={70} color="white" />
@@ -97,96 +130,27 @@ export class CameraScreen extends React.Component {
 
   
   snap = async () => {
-    console.log("Print Image")
+    console.log("Snap Image")
     if (this.camera) {
-      let photo = await this.camera.takePictureAsync({
+        console.log("In This Camera")
+    
+        let photo = await this.camera.takePictureAsync({
           quality:0.5,
           skipProcessing:true
       });
-      console.log("Printed Image")
+      console.log("Printed Image", photo.uri)
       this.setState({
-          photoURI: photo.uri,
-          showCamera: false
-      });
-      <View>
-         <Image
-            source={{uri: this.state.photoURI}}
-            style={{ flex: 1,
-            transform:[{scale:0.9}]}}
-            />
-        </View>
+        photoURI: photo.uri
+      })
     }
   };
 }
 
-  class OutputScreen extends React.Component {
-    render() {
-      return (
-        <View>
-         <Image
-        // style={{ width: 100, height: 100, position:'flex-center' }}
-            source={{uri: this.state.photoURI}}
-            style={{ flex: 1,
-            transform:[{scale:0.9}]}}
-            />
-        </View>
-    //     <View style={styles.bottomBar}>
-    //     <TouchableOpacity style={styles.bottomButton} onPress={() => this.props.navigation.navigate('Camera')}>
-    //       <Octicons name="kebab-horizontal" size={30} color="white"/>
-    //     </TouchableOpacity>
-    //     <View style={{ flex: 0.4 }}>
-    //       <TouchableOpacity
-    //         onPress={this.takePicture}
-    //         style={{ alignSelf: 'center' }}
-    //       >
-    //         <Ionicons name="ios-radio-button-on" size={70} color="white" />
-    //       </TouchableOpacity>
-    //     </View> 
-    //     <TouchableOpacity style={styles.bottomButton} onPress={() => this.props.navigation.navigate('DrugName')}>
-    //       <View>
-    //         <Foundation name="thumbnails" size={30} color="white" />
-    //       </View>
-    //     </TouchableOpacity>
-    //   </View>
-      );
-    }
-  }
-  
-  class DrugNameScreen extends React.Component {
-    render() {
-      return (
-        <View>
-      
-    </View>
-      ) ;
-    }
-  }
-  
-  const RootStack = createStackNavigator(
-    {
-      Camera: CameraScreen,
-      Output: OutputScreen,
-      DrugName: DrugNameScreen
-    },
-    
-    {
-      initialRouteName: 'Camera',
-    }
-  );
-  
-   const AppContainer = createAppContainer(RootStack);
-  
-    export default class App extends React.Component {
-    render() {
-      return <AppContainer />;
-    }
-}
 
 const styles = StyleSheet.create({
     container: {
-        alignSelf: 'flex-end',
+        alignSelf: 'center',
         marginTop: 5,
-        position: 'absolute'
     },
     title: {
         alignSelf: 'center',
@@ -211,7 +175,7 @@ const styles = StyleSheet.create({
       alignItems: 'center'
     },
     CircleShapecontainer: {
-        flex: 3,
+        flex: 1,
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
@@ -241,6 +205,24 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         flex: 0.12,
         flexDirection: 'row',
+    },
+    pillimage: {
+        width: 300, 
+        height: 300,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: 'grey',
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        
+    },
+    OutputButtonContainer: {
+        flex: .5,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
     },
 
   });
