@@ -1,0 +1,9 @@
+{
+  "packagerPort": 19001,
+  "packagerPid": 15168,
+  "expoServerPort": 19000,
+  "expoServerNgrokUrl": "https://ui-zap.anonymous.cameraproject.exp.direct",
+  "packagerNgrokUrl": "https://packager.ui-zap.anonymous.cameraproject.exp.direct",
+  "ngrokPid": 5772,
+  "devToolsPort": 19002
+}
